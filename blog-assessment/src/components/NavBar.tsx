@@ -70,7 +70,7 @@ function NavBar() {
     <header style={styles.shell}>
       <div style={styles.container}>
         <NavLink to="/" style={styles.brand}>
-          Blog
+          <h1>BLOG</h1>
         </NavLink>
 
         <nav style={styles.nav}>
