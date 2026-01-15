@@ -55,8 +55,22 @@ const styles = {
     gap: 10,
     minHeight: 160,
   },
-  cardTitle: { margin: 0, fontSize: 16, color: '#111827' },
-  content: { margin: 0, color: '#4b5563', fontSize: 14, lineHeight: 1.5 },
+  cardTitle: {
+    margin: 0,
+    fontSize: 16,
+    color: '#111827',
+    overflowWrap: 'anywhere' as const,
+    wordBreak: 'break-word' as const,
+  },
+  content: {
+    margin: 0,
+    color: '#4b5563',
+    fontSize: 14,
+    lineHeight: 1.5,
+    overflowWrap: 'anywhere' as const,
+    wordBreak: 'break-word' as const,
+    whiteSpace: 'pre-wrap' as const,
+  },
   meta: { margin: 0, color: '#9ca3af', fontSize: 12 },
   cardActions: { display: 'flex', gap: 10, marginTop: 'auto', flexWrap: 'wrap' as const },
   btnSmall: {
@@ -164,7 +178,7 @@ export default function Blogs() {
         <div style={styles.empty}>
           <b>No blogs yet.</b>
           <div style={{ marginTop: 10 }}>
-            <Link to="/blogs/create" style={styles.btnPrimary}>Create your first blog</Link>
+            <Link to="/blogs/create" style={styles.btnPrimary}>Create your own blog</Link>
           </div>
         </div>
       ) : (
