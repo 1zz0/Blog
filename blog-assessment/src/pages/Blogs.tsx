@@ -17,9 +17,11 @@ const styles = {
     flexWrap: 'wrap' as const,
     marginBottom: 16,
   },
+  
   title: { margin: 0, fontSize: 26, color: '#111827' },
   actions: { display: 'flex', gap: 10, flexWrap: 'wrap' as const },
   btnPrimary: {
+    
     display: 'inline-block',
     padding: '10px 12px',
     borderRadius: 12,
@@ -44,7 +46,7 @@ const styles = {
     gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
     gap: 12,
   },
-  card: {
+  card: { 
     border: '1px solid #e5e7eb',
     borderRadius: 16,
     background: '#fff',
@@ -52,8 +54,15 @@ const styles = {
     boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
     display: 'flex',
     flexDirection: 'column' as const,
-    gap: 10,
+    gap: 10,  
     minHeight: 160,
+  },
+  cardImage: {
+    width: '100%',
+    height: 160,
+    objectFit: 'cover' as const,
+    borderRadius: 12,
+    border: '1px solid #e5e7eb',
   },
   cardTitle: {
     margin: 0,
@@ -187,7 +196,15 @@ export default function Blogs() {
             const isOwner = !!user && blog.user_id === user.id
 
             return (
-              <div key={blog.id} style={styles.card}>
+                <div key={blog.id} style={styles.card}>
+                {blog.image_url ? (
+                  <img
+                    src={blog.image_url}
+                    alt={blog.title}
+                    style={styles.cardImage}
+                  />
+                ) : null}
+
                 <div>
                   <h3 style={styles.cardTitle}>{blog.title}</h3>
                   <p style={styles.meta}>{formatDate(blog.created_at)}</p>

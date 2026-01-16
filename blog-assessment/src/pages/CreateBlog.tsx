@@ -41,6 +41,7 @@ const styles = {
     minHeight: 160,
     resize: 'vertical' as const,
   },
+  fileHint: { marginTop: 6, color: '#6b7280', fontSize: 12 },
   btnRow: { display: 'flex', gap: 10, flexWrap: 'wrap' as const, marginTop: 8 },
   btnPrimary: {
     padding: '10px 12px',
@@ -67,14 +68,39 @@ const styles = {
     display: 'inline-block',
   },
   error: { marginTop: 10, color: '#b91c1c', fontSize: 13 },
+  preview: {
+    width: '100%',
+    maxHeight: 240,
+    objectFit: 'cover' as const,
+    borderRadius: 12,
+    border: '1px solid #e5e7eb',
+  },
+}
+
+function getFileExt(name: string) {
+  const parts = name.split('.')
+  return parts.length > 1 ? parts.pop()!.toLowerCase() : 'png'
 }
 
 export default function CreateBlog() {
   const navigate = useNavigate()
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const handleFileChange = (file: File | null) => {
+    setImageFile(file)
+    if (!file) {
+      setImagePreview(null)
+      return
+    }
+    const url = URL.createObjectURL(file)
+    setImagePreview(url)
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -84,7 +110,6 @@ export default function CreateBlog() {
     setError(null)
 
     try {
-      // getSession is aligned with RLS policy: auth.uid() = user_id
       const { data: sessionData, error: sessionError } = await supabase.auth.getSession()
       if (sessionError) {
         setError(sessionError.message)
@@ -97,8 +122,40 @@ export default function CreateBlog() {
         return
       }
 
+      // 1) Upload image (optional)
+      let image_url: string | null = null
+
+      if (imageFile) {
+        // basic client-side size guard (optional)
+        const maxMb = 5
+        if (imageFile.size > maxMb * 1024 * 1024) {
+          setError(`Image too large. Max ${maxMb}MB.`)
+          return
+        }
+
+        const ext = getFileExt(imageFile.name)
+        const fileName = `${crypto.randomUUID()}.${ext}`
+        const filePath = `${userId}/${fileName}`
+
+        const { error: uploadError } = await supabase.storage
+          .from('blog-images')
+          .upload(filePath, imageFile, { upsert: false })
+
+        if (uploadError) {
+          setError(uploadError.message)
+          return
+        }
+
+        const { data: publicUrlData } = supabase.storage
+          .from('blog-images')
+          .getPublicUrl(filePath)
+
+        image_url = publicUrlData.publicUrl
+      }
+
+      // 2) Insert blog row
       const { error: insertError } = await supabase.from('blogs').insert([
-        { title, content, user_id: userId },
+        { title, content, user_id: userId, image_url },
       ])
 
       if (insertError) {
@@ -106,9 +163,11 @@ export default function CreateBlog() {
         return
       }
 
-      // Clear form (optional) then go back to list
+      // Clear form then go back
       setTitle('')
       setContent('')
+      setImageFile(null)
+      setImagePreview(null)
       navigate('/blogs')
     } finally {
       setSaving(false)
@@ -122,7 +181,7 @@ export default function CreateBlog() {
           <div>
             <h1 style={styles.title}>Create Blog</h1>
             <p style={styles.subtitle}>
-              Add a title and content, then publish. You can edit or delete later.
+              Add a title, content, and optionally an image. You can edit or delete later.
             </p>
           </div>
 
@@ -154,6 +213,24 @@ export default function CreateBlog() {
               required
               disabled={saving}
             />
+          </div>
+
+          <div>
+            <label style={styles.label}>Image (optional)</label>
+            <input
+              style={styles.input}
+              type="file"
+              accept="image/*"
+              disabled={saving}
+              onChange={e => handleFileChange(e.target.files?.[0] ?? null)}
+            />
+            <div style={styles.fileHint}>Recommended: JPG/PNG, up to 5MB.</div>
+
+            {imagePreview && (
+              <div style={{ marginTop: 10 }}>
+                <img src={imagePreview} alt="Preview" style={styles.preview} />
+              </div>
+            )}
           </div>
 
           <div style={styles.btnRow}>
