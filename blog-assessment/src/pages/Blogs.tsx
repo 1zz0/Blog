@@ -17,11 +17,9 @@ const styles = {
     flexWrap: 'wrap' as const,
     marginBottom: 16,
   },
-  
   title: { margin: 0, fontSize: 26, color: '#111827' },
   actions: { display: 'flex', gap: 10, flexWrap: 'wrap' as const },
   btnPrimary: {
-    
     display: 'inline-block',
     padding: '10px 12px',
     borderRadius: 12,
@@ -46,7 +44,11 @@ const styles = {
     gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
     gap: 12,
   },
-  card: { 
+  cardLink: {
+    textDecoration: 'none',
+    color: 'inherit',
+  },
+  card: {
     border: '1px solid #e5e7eb',
     borderRadius: 16,
     background: '#fff',
@@ -54,7 +56,7 @@ const styles = {
     boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
     display: 'flex',
     flexDirection: 'column' as const,
-    gap: 10,  
+    gap: 10,
     minHeight: 160,
   },
   cardImage: {
@@ -175,7 +177,6 @@ export default function Blogs() {
         <h1 style={styles.title}>Blogs</h1>
 
         <div style={styles.actions}>
-          {/* Create stays visible, but if route is protected, anon will be redirected */}
           <Link to="/blogs/create" style={styles.btnPrimary}>Create Blog</Link>
           <Link to="/" style={styles.btnSecondary}>Home</Link>
         </div>
@@ -196,40 +197,50 @@ export default function Blogs() {
             const isOwner = !!user && blog.user_id === user.id
 
             return (
-                <div key={blog.id} style={styles.card}>
-                {blog.image_url ? (
-                  <img
-                    src={blog.image_url}
-                    alt={blog.title}
-                    style={styles.cardImage}
-                  />
-                ) : null}
+              <Link key={blog.id} to={`/blogs/${blog.id}`} style={styles.cardLink}>
+                <div style={styles.card}>
+                  {blog.image_url ? (
+                    <img src={blog.image_url} alt={blog.title} style={styles.cardImage} />
+                  ) : null}
 
-                <div>
-                  <h3 style={styles.cardTitle}>{blog.title}</h3>
-                  <p style={styles.meta}>{formatDate(blog.created_at)}</p>
-                </div>
-
-                <p style={styles.content}>
-                  {blog.content.length > 220 ? blog.content.slice(0, 220) + '…' : blog.content}
-                </p>
-
-                {/* Only show edit/delete for owner */}
-                {isOwner && (
-                  <div style={styles.cardActions}>
-                    <Link to={`/blogs/edit/${blog.id}`} style={styles.btnSmall}>Edit</Link>
-
-                    <button
-                      type="button"
-                      style={styles.btnDanger}
-                      onClick={() => handleDelete(blog.id)}
-                      disabled={deletingId === blog.id}
-                    >
-                      {deletingId === blog.id ? 'Deleting…' : 'Delete'}
-                    </button>
+                  <div>
+                    <h3 style={styles.cardTitle}>{blog.title}</h3>
+                    <p style={styles.meta}>{formatDate(blog.created_at)}</p>
                   </div>
-                )}
-              </div>
+
+                  <p style={styles.content}>
+                    {blog.content.length > 220 ? blog.content.slice(0, 220) + '…' : blog.content}
+                  </p>
+
+                  {isOwner && (
+                    <div style={styles.cardActions}>
+                      <Link
+                        to={`/blogs/edit/${blog.id}`}
+                        style={styles.btnSmall}
+                        onClick={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                        }}
+                      >
+                        Edit
+                      </Link>
+
+                      <button
+                        type="button"
+                        style={styles.btnDanger}
+                        onClick={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          handleDelete(blog.id)
+                        }}
+                        disabled={deletingId === blog.id}
+                      >
+                        {deletingId === blog.id ? 'Deleting…' : 'Delete'}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </Link>
             )
           })}
         </div>

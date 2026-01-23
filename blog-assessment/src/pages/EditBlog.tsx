@@ -72,6 +72,16 @@ const styles = {
     border: '1px solid #e5e7eb',
   },
   hint: { marginTop: 6, color: '#6b7280', fontSize: 12 },
+  btnDanger: {
+  padding: '10px 12px',
+  borderRadius: 12,
+  border: '1px solid #fecaca',
+  background: '#fff',
+  cursor: 'pointer',
+  fontSize: 14,
+  color: '#b91c1c',
+},
+
 }
 
 function getFileExt(name: string) {
@@ -231,20 +241,44 @@ export default function EditBlog() {
               disabled={saving}
             />
           </div>
+           {existingImageUrl ? (
+  <>
+    <img src={existingImageUrl} alt="Current" style={styles.preview} />
+    <button
+      type="button"
+      style={styles.btnDanger}
+      onClick={async () => {
+        if (!id) return
+        const ok = window.confirm('Remove the current image from this post?')
+        if (!ok) return
 
-          <div>
-            <label style={styles.label}>Current image</label>
-            {existingImageUrl ? (
-              <img src={existingImageUrl} alt="Current" style={styles.preview} />
-            ) : (
-              <p style={styles.hint}>No image uploaded for this post.</p>
-            )}
-          </div>
+        const { error } = await supabase
+          .from('blogs')
+          .update({ image_url: null })
+          .eq('id', id)
 
-          <div>
-            <label style={styles.label}>Replace image (optional)</label>
-            <input
-              style={styles.input}
+        if (error) {
+          setError(error.message)
+          return
+        }
+
+        setExistingImageUrl(null)
+        setImageFile(null)
+        setImagePreview(null)
+      }}
+      disabled={saving}
+    >
+      Remove image
+    </button>
+  </>
+) : (
+  <p style={styles.hint}>No image uploaded for this post.</p>
+)}
+
+  <div>
+    <label style={styles.label}>Replace image (optional)</label>
+        <input
+          style={styles.input}
               type="file"
               accept="image/*"
               disabled={saving}

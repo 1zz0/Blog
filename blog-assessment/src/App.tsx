@@ -8,6 +8,8 @@ import Blogs from './pages/Blogs'
 import CreateBlog from './pages/CreateBlog'
 import ProtectedRoute from './components/ProtectedRoute'
 import EditBlog from './pages/EditBlog'
+import ViewBlog from './pages/ViewBlog'
+
 
 
 function App() {
@@ -51,6 +53,7 @@ function App() {
 
 
         <Route path="*" element={<h1 style={{ padding: 16 }}>Not Found</h1>} />
+        <Route path="/blogs/:id" element={<ViewBlog />} />
       </Routes>
     </>
   )
